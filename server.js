@@ -23,7 +23,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.json({ message: "Student Management API is running" });
+  res.json({ message: "Online Rangmanch API is running" });
 });
 
 app.use("/api/auth", authRoutes);
