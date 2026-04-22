@@ -2,8 +2,10 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
+// Use /tmp for serverless environments
+const uploadPath = "/tmp/uploads/photos";
+
 // Ensure folder exists
-const uploadPath = "uploads/photos";
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
