@@ -2,10 +2,21 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// Ensure folder exists
-const uploadPath = "uploads/videos";
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath, { recursive: true });
+// Detect environment
+const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+
+// Use correct upload path
+const uploadPath = isServerless
+  ? "/tmp/uploads/videos"
+  : path.join(__dirname, "../uploads/videos");
+
+// Ensure folder exists (safe)
+try {
+  if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+  }
+} catch (err) {
+  console.error("Error creating upload folder:", err.message);
 }
 
 // Storage config
@@ -14,7 +25,11 @@ const storage = multer.diskStorage({
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
-    const uniqueName = Date.now() + path.extname(file.originalname);
+    const uniqueName =
+      Date.now() +
+      "-" +
+      Math.round(Math.random() * 1e9) +
+      path.extname(file.originalname);
     cb(null, uniqueName);
   },
 });
@@ -28,12 +43,12 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Optional: limit file size (IMPORTANT 🔥)
+// Upload config
 const uploadVideo = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB max
+    fileSize: 100 * 1024 * 1024, // 100MB
   },
 });
 
